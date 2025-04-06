@@ -21,12 +21,23 @@ window.addEventListener("load", () => {
     console.log(sudoku.data);
     console.log(sudoku.guess_data);
 
+    // test fill randomly (non-valid board generated)
+    setInterval(() => {
+      const randomValue = Math.floor(Math.random() * 8) + 1;
+      const randomPosition = [
+        Math.floor(Math.random() * 8),
+        Math.floor(Math.random() * 8),
+      ];
+
+      sudoku.update_cell(randomPosition, randomValue);
+      sudoku.auto_fill();
+    }, 500);
+    //
+
     scene.$canvas.addEventListener("position-selected", (event: any) => {
-      console.log("position-selected: ", event.detail);
       const random = Math.floor(Math.random() * 8) + 1;
 
       sudoku.update_cell(event.detail as Vec2, random);
-      console.log(sudoku);
     });
 
     let loop = 0;
