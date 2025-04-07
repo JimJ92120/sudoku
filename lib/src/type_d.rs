@@ -1,5 +1,5 @@
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
-use serde::{Serialize, Deserialize};
 
 #[wasm_bindgen]
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
@@ -12,10 +12,6 @@ pub struct Coordinates {
 impl Coordinates {
     #[wasm_bindgen(constructor)]
     pub fn new(x: isize, y: isize, z: isize) -> Self {
-        Self {
-            x,
-            y,
-            z,
-        }
+        Self { x, y, z }
     }
 }
