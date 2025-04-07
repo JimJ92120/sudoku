@@ -91,55 +91,8 @@ impl Sudoku {
 
     #[wasm_bindgen]
     pub fn is_filled(&mut self) -> bool {
-        let range = 0..=8;
-
-        let rows: SudokuData = self.data.clone();
-        let columns: SudokuData = range
-            .clone()
-            .into_iter()
-            .map(|column_index| {
-                let _row: [usize; 9] = range
-                    .clone()
-                    .into_iter()
-                    .map(|row_index| self.data.clone()[row_index as usize][column_index])
-                    .collect::<Vec<usize>>()
-                    .try_into()
-                    .unwrap();
-
-                _row
-            })
-            .collect::<Vec<[usize; 9]>>()
-            .try_into()
-            .unwrap();
-        let zones: SudokuData = range
-            .clone()
-            .into_iter()
-            .map(|index| {
-                let row_index: usize = floor(index as f64 / 3 as f64) as usize;
-                let column_index: usize = index % 3;
-                let range_to_fetch = (column_index * 3)..=(column_index * 3 + 2);
-                let _range = 0..=2;
-
-                let row: [[usize; 3]; 3] = [
-                    self.data.clone()[row_index * 3][range_to_fetch.clone()]
-                        .try_into()
-                        .unwrap(),
-                    self.data.clone()[row_index * 3 + 1][range_to_fetch.clone()]
-                        .try_into()
-                        .unwrap(),
-                    self.data.clone()[row_index * 3 + 2][range_to_fetch.clone()]
-                        .try_into()
-                        .unwrap(),
-                ];
-                let row: [usize; 9] = row.concat().try_into().unwrap();
-
-                row
-            })
-            .collect::<Vec<[usize; 9]>>()
-            .try_into()
-            .unwrap();
-
-        let data: [&SudokuData; 3] = [&rows, &columns, &zones];
+        let data: [&SudokuData; 3] = [&self.data.clone(), & self.get_columns(), &self.get_zones()];
+        
         for index in 0..=2 {
             let _data: &SudokuData = data[index];
             let row_match = "123456789";
@@ -153,7 +106,7 @@ impl Sudoku {
                     log(&format!("is_filled false: {:?}", [index, _index]));
                     log(&format!(
                         "rows:\n{:?}\n\ncolumns:\n{:?}\n\nzones:\n{:?}\n\n",
-                        rows, columns, zones
+                        data[0], data[1], data[2]
                     ));
 
                     return false;
@@ -323,6 +276,7 @@ impl Sudoku {
     }
 
     fn can_update_cell(&self, position: [usize; 2], new_value: usize) -> bool {
+
         let is_set: bool = 0 != self.data[position[1]][position[0]];
         let are_related_cells_set: bool =
             0 == self.guess_data[position[1]][position[0]][new_value - 1];
@@ -343,5 +297,59 @@ impl Sudoku {
         //
 
         return false;
+    }
+
+    fn get_columns(&self) -> SudokuData {
+        let range: std::ops::RangeInclusive<usize> = 0..=8;
+
+        range
+            .clone()
+            .into_iter()
+            .map(|column_index| {
+                let _row: [usize; 9] = range
+                    .clone()
+                    .into_iter()
+                    .map(|row_index| self.data.clone()[row_index as usize][column_index])
+                    .collect::<Vec<usize>>()
+                    .try_into()
+                    .unwrap();
+
+                _row
+            })
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap()
+    }
+
+    fn get_zones(&self) -> SudokuData {
+        let range: std::ops::RangeInclusive<usize> = 0..=8;
+
+        range
+            .clone()
+            .into_iter()
+            .map(|index| {
+                let row_index: usize = floor(index as f64 / 3 as f64) as usize;
+                let column_index: usize = index % 3;
+                let range_to_fetch = (column_index * 3)..=(column_index * 3 + 2);
+                let _range = 0..=2;
+
+                let row: [[usize; 3]; 3] = [
+                    self.data.clone()[row_index * 3][range_to_fetch.clone()]
+                        .try_into()
+                        .unwrap(),
+                    self.data.clone()[row_index * 3 + 1][range_to_fetch.clone()]
+                        .try_into()
+                        .unwrap(),
+                    self.data.clone()[row_index * 3 + 2][range_to_fetch.clone()]
+                        .try_into()
+                        .unwrap(),
+                ];
+                let row: [usize; 9] = row.concat().try_into().unwrap();
+
+                row
+            })
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap()
     }
 }
