@@ -16,10 +16,9 @@ window.addEventListener("load", () => {
 
     //
     const sudoku = new Sudoku();
-    sudoku.generate();
-
-    console.log(sudoku.data);
-    console.log(sudoku.guess_data);
+    // setTimeout(() => {
+    //   sudoku.auto_fill();
+    // }, 3000);
 
     scene.$canvas.addEventListener("position-selected", (event: any) => {
       const random = Math.floor(Math.random() * 8) + 1;

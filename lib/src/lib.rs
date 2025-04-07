@@ -38,10 +38,13 @@ pub struct Sudoku {
 impl Sudoku {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        Self {
+        let mut sudoku = Self {
             data: Sudoku::new_data(),
             guess_data: Sudoku::new_guess_data(),
-        }
+        };
+        sudoku.generate();
+
+        sudoku
     }
 
     #[wasm_bindgen(getter)]
@@ -55,12 +58,57 @@ impl Sudoku {
     }
 
     #[wasm_bindgen]
-    pub fn generate(&self) {
+    pub fn generate(&mut self) {
         log(&format!("generating data..."));
 
-        // let guess_data: GuessData = Sudoku::new_guess_data();
+        let mut data: SudokuData = Sudoku::new_data();
+        let mut guess_data: GuessData = Sudoku::new_guess_data();
 
-        // log(&format!("{:?}", "ok"));
+        // shift rows*3 and columns*3 while valid
+        data = [
+            data[6],
+            data[7],
+            data[8],
+            //
+            data[2],
+            data[1],
+            data[0],
+            //
+            data[3],
+            data[4],
+            data[5]
+        ];
+
+        // drop n cells to be filled
+        let positions: [[usize; 2]; 10] = [
+            [1, 1],
+            [8, 3],
+            [4, 3],
+            [2, 0],
+            [0, 5],
+            //
+            [5, 5],
+            [3, 8],
+            [7, 5],
+            [4, 1],
+            [1, 3],
+        ];
+        let range = 0..=9;
+        for index in range {
+            let random_position: [usize; 2] = positions[index];
+
+            if 0 != data[random_position[1]][random_position[0]] {
+                let previous_value: usize = data[random_position[1]][random_position[0]];
+
+                guess_data[random_position[1]][random_position[0]] =
+                    guess_data[random_position[1]][random_position[0]].into_iter()
+                        .map(|x| if previous_value == x { x } else { 0 }).collect::<Vec<usize>>().try_into().unwrap();
+                data[random_position[1]][random_position[0]] = 0;
+            }
+        }
+
+        self.data = data;
+        self.guess_data = guess_data;
     }
 
     #[wasm_bindgen]
@@ -103,11 +151,11 @@ impl Sudoku {
                 let row: String = row.map(|x| x.to_string()).join("");
 
                 if row != row_match {
-                    log(&format!("is_filled false: {:?}", [index, _index]));
-                    log(&format!(
-                        "rows:\n{:?}\n\ncolumns:\n{:?}\n\nzones:\n{:?}\n\n",
-                        data[0], data[1], data[2]
-                    ));
+                    // log(&format!("is_filled false: {:?}", [index, _index]));
+                    // log(&format!(
+                    //     "rows:\n{:?}\n\ncolumns:\n{:?}\n\nzones:\n{:?}\n\n",
+                    //     data[0], data[1], data[2]
+                    // ));
 
                     return false;
                 }
