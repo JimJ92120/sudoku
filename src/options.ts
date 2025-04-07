@@ -12,7 +12,8 @@ const COLORS: { [key: string]: Vec4 } = {
   LINES: [0, 0, 0, 1], // black
   TEXT: [0, 0, 0, 1],
   BACKGROUND: [0, 0, 0, 1],
-  HIGHLIGHT: [255, 0, 0, 1],
+  HIGHLIGHT: [255, 0, 0, 1], // red
+  VALID: [0, 255, 0, 1], // green
 };
 
 export { SCENE_WIDTH, SCENE_HEIGHT, ZONE_SIZE, CELL_SIZE, COLORS };

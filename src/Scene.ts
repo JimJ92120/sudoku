@@ -11,7 +11,8 @@ import {
 class Scene {
   $canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
-  private selectedPosition: Vec2 | null = null;
+  selectedPosition: Vec2 | null = null;
+  filledPositions: Vec2[] = [];
 
   constructor($canvas: HTMLCanvasElement) {
     this.$canvas = $canvas;
@@ -89,6 +90,14 @@ class Scene {
         COLORS.HIGHLIGHT
       );
     }
+
+    this.filledPositions.map((position) => {
+      this.drawSquareLines(
+        [position[0] * CELL_SIZE, position[1] * CELL_SIZE],
+        CELL_SIZE,
+        COLORS.VALID
+      );
+    });
   }
 
   private drawSquareLines(origin: Vec2, size: number, color: Vec4): void {
