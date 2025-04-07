@@ -2,6 +2,8 @@
 
 Some Sudoku with `Canvas2D` and `WebAssembly`.
 
+Github Page: https://jimj92120.github.io/sudoku/
+
 ---
 
 ---
