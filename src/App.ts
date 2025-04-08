@@ -19,6 +19,9 @@ class App {
 
   <button id="generate">Generate</button>
 
+  <button id="shift-rows">Shift rows</button>
+  <button id="shift-columns">Shift columns</button>
+
   <div class="controls">
     ${[...Array(9).keys()].reduce(
       (_result, index) =>

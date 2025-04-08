@@ -1,3 +1,4 @@
+// @ts-ignore
 import init, { Sudoku } from "../dist/lib";
 import { Vec2 } from "./type";
 
@@ -60,8 +61,21 @@ window.addEventListener("load", () => {
     scene.$eventListener.addEventListener("generate-new", (event: any) => {
       console.log("generating new data requested...");
 
-      sudoku.generate();
+      sudoku.generate(1);
     });
+
+    app.$container
+      .querySelector("#shift-rows")!
+      .addEventListener("click", () => {
+        console.log("shifting rows...");
+
+        sudoku.shift_rows(1);
+      });
+    app.$container
+      .querySelector("#shift-columns")!
+      .addEventListener("click", () => {
+        // sudoku.shift_columns();
+      });
 
     let loop = 0;
     const animate: FrameRequestCallback = () => {
