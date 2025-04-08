@@ -2,7 +2,7 @@ import init, { Sudoku } from "../dist/lib";
 import { Vec2 } from "./type";
 
 import { App } from "./App";
-import Scene from "./Scene";
+import Scene, { SceneInputEvent } from "./Scene";
 
 window.addEventListener("load", () => {
   init().then(() => {
@@ -10,20 +10,49 @@ window.addEventListener("load", () => {
     app.render();
 
     const $faceMap: HTMLPreElement = app.$container.querySelector("#map")!;
-
-    //
-    const scene = new Scene(app.$container.querySelector("#scene")!);
+    const scene = new Scene(app.$container.querySelector("#scene")!, [
+      ...app.$container.querySelectorAll(".controls__button").values(),
+    ] as HTMLElement[]);
 
     //
     const sudoku = new Sudoku();
-    // setTimeout(() => {
-    //   sudoku.auto_fill();
-    // }, 3000);
+    // sudoku.auto_fill();
 
-    scene.$canvas.addEventListener("position-selected", (event: any) => {
-      const random = Math.floor(Math.random() * 8) + 1;
+    let selectedPosition: Vec2 | null = null;
+    const onInput = (data: SceneInputEvent) => {
+      if (data.position) {
+        selectedPosition = data.position;
 
-      sudoku.update_cell(event.detail as Vec2, random);
+        console.log(selectedPosition);
+      }
+
+      if ((data.value || 0 === data.value) && selectedPosition) {
+        console.log(
+          `updating [${selectedPosition.join(", ")}] with ${data.value}`
+        );
+
+        const isUpdated: Boolean = sudoku.update_cell(
+          selectedPosition,
+          data.value
+        );
+
+        if (!isUpdated) {
+          alert(
+            `unable to update [${selectedPosition.join(", ")}] with ${
+              data.value
+            }`
+          );
+        }
+      }
+    };
+
+    scene.$eventListener.addEventListener("position-selected", (event: any) => {
+      onInput(event.detail);
+
+      // sudoku.update_cell(event.detail as Vec2, random);
+    });
+    scene.$eventListener.addEventListener("input-selected", (event: any) => {
+      onInput(event.detail);
     });
 
     let loop = 0;
