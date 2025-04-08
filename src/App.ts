@@ -18,18 +18,18 @@ class App {
   </p>
 
   <div class="controls">
-    <button id="generate">Generate</button>
-
     <div>
-      <label>Autofill</label>
+      <button id="generate">Generate</button>
+      <button id="restart">Restart</button>
+    </div>
+    <div>
+      <label>Auto-fill</label>
       <input type="checkbox" id="auto-fill"></input>
     </div>
-
     <div>
       <label>Shuffle count: <span id="shuffle-count-value">1</span></label>
       <input type="range" id="shuffle-count" value="1"></input>
     </div>
-
     <div>
       <label>Difficulty: <span id="difficulty-value" max="100">1</span></label>
       <input type="range" id="difficulty" value="1" max="80"></input>
@@ -54,12 +54,15 @@ class App {
     .controls {
       display: flex;
       flex-flow: column wrap;
+      align-items: center;
+      justify-content: center;
     }
     .controls > * {
       margin-bottom: 1rem
     }
 
-    #generate {
+    #generate,
+    #restart {
       width: fit-content;
 
       margin-left: auto;
