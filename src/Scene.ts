@@ -8,14 +8,22 @@ import {
   CELL_SIZE,
 } from "./options";
 
+type SceneInputEvent = {
+  position?: Vec2;
+  value?: number;
+};
 class Scene {
-  $canvas: HTMLCanvasElement;
+  readonly $eventListener: HTMLElement;
+  private $canvas: HTMLCanvasElement;
+  private $inputButtons: HTMLElement[];
   private context: CanvasRenderingContext2D;
-  selectedPosition: Vec2 | null = null;
-  filledPositions: Vec2[] = [];
+  private selectedPosition: Vec2 | null = null;
+  private filledPositions: Vec2[] = [];
 
-  constructor($canvas: HTMLCanvasElement) {
+  constructor($canvas: HTMLCanvasElement, $inputButtons: HTMLElement[]) {
+    this.$eventListener = document.createElement("div") as HTMLElement;
     this.$canvas = $canvas;
+    this.$inputButtons = $inputButtons;
     this.context = this.$canvas.getContext("2d")!;
 
     this.$canvas.width = SCENE_WIDTH;
@@ -25,6 +33,11 @@ class Scene {
     this.$canvas.addEventListener("click", (event: MouseEvent) =>
       this.onMouseClickCallback(event)
     );
+    this.$inputButtons.map(($button) => {
+      $button.addEventListener("click", (event: MouseEvent) => {
+        this.onInputButtonClickCallback(event);
+      });
+    });
   }
 
   onMouseClickCallback(event: MouseEvent): void {
@@ -37,9 +50,36 @@ class Scene {
       Math.floor(y / CELL_SIZE),
     ];
 
-    this.$canvas.dispatchEvent(
-      new CustomEvent("position-selected", { detail: this.selectedPosition })
+    this.$eventListener.dispatchEvent(
+      new CustomEvent("position-selected", {
+        detail: {
+          position: this.selectedPosition,
+        } as SceneInputEvent,
+      })
     );
+
+    // duplicated
+    this.$inputButtons.map(($element) => {
+      $element.classList.remove("controls__button--selected");
+    });
+  }
+
+  onInputButtonClickCallback(event: MouseEvent): void {
+    const $target: HTMLElement = event.target as HTMLElement;
+    const value = $target.getAttribute("data-value");
+
+    this.$eventListener.dispatchEvent(
+      new CustomEvent("input-selected", {
+        detail: {
+          value: "" !== value ? Number(value) : null,
+        } as SceneInputEvent,
+      })
+    );
+
+    this.$inputButtons.map(($element) => {
+      $element.classList.remove("controls__button--selected");
+    });
+    $target.classList.add("controls__button--selected");
   }
 
   //
@@ -173,4 +213,4 @@ class Scene {
 
 export default Scene;
 
-export {};
+export { SceneInputEvent };
