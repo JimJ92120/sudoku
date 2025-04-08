@@ -56,8 +56,20 @@ impl Sudoku {
     pub fn generate(&mut self, shift_count: usize, remove_count: usize) {
         log(&format!("generating data..."));
 
-        self.data = self.generate_random_data(shift_count, remove_count);
+        let mut data: SudokuData = self.generate_random_data(shift_count);
 
+        // drop n cells to be filled
+        // check if remove_count <= 9 x 9 - 1 = 80
+        // does not account possible duplicated random_position
+        for _ in 0..=remove_count {
+            let random_position: [usize; 2] = [rand(8), rand(8)];
+
+            if 0 != data[random_position[1]][random_position[0]] {
+                data[random_position[1]][random_position[0]] = 0;
+            }
+        }
+
+        self.data = data;
         self.reset_guess_data();
     }
 
@@ -388,7 +400,7 @@ impl Sudoku {
             .unwrap()
     }
 
-    fn generate_random_data(&mut self, shift_count: usize, remove_count: usize) -> SudokuData {
+    fn generate_random_data(&mut self, shift_count: usize) -> SudokuData {
         let mut data: SudokuData = Sudoku::new_data();
         let half_count = if 2 <= shift_count {
             js_sys::Math::floor(shift_count as f64 / 2.0) as usize
@@ -399,17 +411,6 @@ impl Sudoku {
             // possibly add inverse rows and columns indices
             data = self.shift_rows_randomly(half_count, data);
             data = self.shift_columns_randomly(half_count, data);
-        }
-
-        // drop n cells to be filled
-        // check if remove_count <= 9 x 9 - 1 = 80
-        // does not account possible duplicated random_position
-        for _ in 0..=remove_count {
-            let random_position: [usize; 2] = [rand(8), rand(8)];
-
-            if 0 != data[random_position[1]][random_position[0]] {
-                data[random_position[1]][random_position[0]] = 0;
-            }
         }
 
         data
