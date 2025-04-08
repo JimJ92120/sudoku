@@ -40,6 +40,7 @@ impl Sudoku {
         sudoku
     }
 
+    // getters
     #[wasm_bindgen(getter)]
     pub fn data(&self) -> JsValue {
         serde_wasm_bindgen::to_value(&self.data.clone()).unwrap()
@@ -50,62 +51,14 @@ impl Sudoku {
         serde_wasm_bindgen::to_value(&self.guess_data.clone()).unwrap()
     }
 
+    // wasm
     #[wasm_bindgen]
     pub fn generate(&mut self, shift_count: usize, remove_count: usize) {
         log(&format!("generating data..."));
 
-        let mut data: SudokuData = Sudoku::new_data();
+        self.data = self.generate_random_data(shift_count, remove_count);
 
-        // do smth
-
-        let half_count = if 2 <= shift_count {
-            js_sys::Math::floor(shift_count as f64 / 2.0) as usize
-        } else {
-            shift_count
-        };
-        for _ in 0..=1 {
-            data = self.shift_rows_randomly(half_count, data);
-            data = self.shift_columns_randomly(half_count, data);
-        }
-
-        // drop n cells to be filled
-        // check if remove_count <= 9 x 9 - 1 = 80
-        // does not account possible duplicated random_position
-        for _ in 0..=remove_count {
-            let random_position: [usize; 2] = [rand(8), rand(8)];
-
-            if 0 != data[random_position[1]][random_position[0]] {
-                data[random_position[1]][random_position[0]] = 0;
-            }
-        }
-
-        self.data = data;
-    }
-
-    #[wasm_bindgen]
-    pub fn update_cell(&mut self, position: JsValue, new_value: usize) -> bool {
-        let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
-
-        self._update_cell(position, new_value)
-    }
-
-    #[wasm_bindgen]
-    pub fn get_related_cells_positions(&self, position: JsValue) -> JsValue {
-        let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
-        let result: [[[usize; 2]; 9]; 3] = self._get_related_cells_positions(position);
-
-        serde_wasm_bindgen::to_value(&result.clone()).unwrap()
-    }
-
-    #[wasm_bindgen]
-    pub fn auto_fill(&mut self) -> JsValue {
-        let result: Vec<Vec<usize>> = self
-            ._auto_fill()
-            .iter()
-            .map(|x| Vec::from(*x))
-            .collect::<Vec<Vec<usize>>>();
-
-        serde_wasm_bindgen::to_value(&result.clone()).unwrap()
+        self.reset_guess_data();
     }
 
     #[wasm_bindgen]
@@ -145,54 +98,26 @@ impl Sudoku {
         true
     }
 
-    fn shift_rows_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
-        let rows: SudokuData = data.clone();
+    // wasm wrappers
+    #[wasm_bindgen]
+    pub fn update_cell(&mut self, position: JsValue, new_value: usize) -> bool {
+        let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
 
-        self.shift_items(shift_count, rows)
+        self._update_cell(position, new_value)
     }
 
-    fn shift_columns_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
-        let mut columns: SudokuData = get_matrix2_columns(self.data_to_vec(data))
-            .into_iter()
-            .map(|x| x.try_into().unwrap())
-            .collect::<Vec<[usize; 9]>>()
-            .try_into()
-            .unwrap();
-        columns = self.shift_items(shift_count, columns.clone());
+    #[wasm_bindgen]
+    pub fn auto_fill(&mut self) -> JsValue {
+        let result: Vec<Vec<usize>> = self
+            ._auto_fill()
+            .iter()
+            .map(|x| Vec::from(*x))
+            .collect::<Vec<Vec<usize>>>();
 
-        get_matrix2_columns(self.data_to_vec(columns))
-            .into_iter()
-            .map(|x| x.try_into().unwrap())
-            .collect::<Vec<[usize; 9]>>()
-            .try_into()
-            .unwrap()
+        serde_wasm_bindgen::to_value(&result.clone()).unwrap()
     }
 
-    fn _auto_fill(&mut self) -> Vec<[usize; 2]> {
-        let mut filled_cells_positions: Vec<[usize; 2]> = vec![];
-
-        for row_index in 0..=8 {
-            for column_index in 0..=8 {
-                if 0 < self.data[row_index][column_index] {
-                    continue;
-                }
-
-                let mut guess_data: Vec<usize> =
-                    self.guess_data[row_index][column_index].try_into().unwrap();
-                let sum: usize = guess_data.iter().sum::<usize>();
-
-                guess_data.retain(|x| 0 == *x);
-
-                if 8 == guess_data.len() {
-                    self._update_cell([column_index, row_index] as [usize; 2], sum);
-                    filled_cells_positions.push([column_index, row_index]);
-                }
-            }
-        }
-
-        filled_cells_positions
-    }
-
+    // static
     fn new_data() -> SudokuData {
         let range = 0..=8;
         let mut row: [usize; 9] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -256,6 +181,32 @@ impl Sudoku {
         guess_data.clone()
     }
 
+    // wasm mirrors
+    fn _auto_fill(&mut self) -> Vec<[usize; 2]> {
+        let mut filled_cells_positions: Vec<[usize; 2]> = vec![];
+
+        for row_index in 0..=8 {
+            for column_index in 0..=8 {
+                if 0 < self.data[row_index][column_index] {
+                    continue;
+                }
+
+                let mut guess_data: Vec<usize> =
+                    self.guess_data[row_index][column_index].try_into().unwrap();
+                let sum: usize = guess_data.iter().sum::<usize>();
+
+                guess_data.retain(|x| 0 == *x);
+
+                if 8 == guess_data.len() {
+                    self._update_cell([column_index, row_index] as [usize; 2], sum);
+                    filled_cells_positions.push([column_index, row_index]);
+                }
+            }
+        }
+
+        filled_cells_positions
+    }
+
     fn _update_cell(&mut self, position: [usize; 2], new_value: usize) -> bool {
         log(&format!(
             "attempting to update_cell() at position {:?} with value {:?}",
@@ -266,7 +217,7 @@ impl Sudoku {
             return false;
         }
 
-        let related_positions: [[[usize; 2]; 9]; 3] = self._get_related_cells_positions(position);
+        let related_positions: [[[usize; 2]; 9]; 3] = self.get_related_cells_positions(position);
 
         // update cell
         self.data[position[1]][position[0]] = new_value;
@@ -288,7 +239,31 @@ impl Sudoku {
         true
     }
 
-    fn _get_related_cells_positions(&self, position: [usize; 2]) -> [[[usize; 2]; 9]; 3] {
+    //
+    fn shift_rows_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
+        let rows: SudokuData = data.clone();
+
+        self.shift_items(shift_count, rows)
+    }
+
+    fn shift_columns_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
+        let mut columns: SudokuData = get_matrix2_columns(self.data_to_vec(data))
+            .into_iter()
+            .map(|x| x.try_into().unwrap())
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap();
+        columns = self.shift_items(shift_count, columns.clone());
+
+        get_matrix2_columns(self.data_to_vec(columns))
+            .into_iter()
+            .map(|x| x.try_into().unwrap())
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap()
+    }
+
+    fn get_related_cells_positions(&self, position: [usize; 2]) -> [[[usize; 2]; 9]; 3] {
         let zone_position: [usize; 2] = [
             (((position[0] / 3) as f64).floor()) as usize,
             (((position[1] / 3) as f64).floor()) as usize,
@@ -411,5 +386,54 @@ impl Sudoku {
             .collect::<Vec<[usize; 9]>>()
             .try_into()
             .unwrap()
+    }
+
+    fn generate_random_data(&mut self, shift_count: usize, remove_count: usize) -> SudokuData {
+        let mut data: SudokuData = Sudoku::new_data();
+        let half_count = if 2 <= shift_count {
+            js_sys::Math::floor(shift_count as f64 / 2.0) as usize
+        } else {
+            shift_count
+        };
+        for _ in 0..=1 {
+            data = self.shift_rows_randomly(half_count, data);
+            data = self.shift_columns_randomly(half_count, data);
+        }
+
+        // drop n cells to be filled
+        // check if remove_count <= 9 x 9 - 1 = 80
+        // does not account possible duplicated random_position
+        for _ in 0..=remove_count {
+            let random_position: [usize; 2] = [rand(8), rand(8)];
+
+            if 0 != data[random_position[1]][random_position[0]] {
+                data[random_position[1]][random_position[0]] = 0;
+            }
+        }
+
+        data
+    }
+
+    fn reset_guess_data(&mut self) {
+        let mut guess_data: GuessData = Sudoku::new_guess_data();
+        for row_index in 0..=8 {
+            for column_index in 0..=8 {
+                let related_positions: Vec<[usize; 2]> = self
+                    .get_related_cells_positions([column_index, row_index])
+                    .concat()
+                    .to_vec();
+
+                for related_position_index in 0..=(related_positions.len() - 1) {
+                    let position: [usize; 2] = related_positions[related_position_index];
+                    let value: usize = self.data[position[1]][position[0]];
+
+                    if 0 != value && guess_data[row_index][column_index].contains(&value) {
+                        guess_data[row_index][column_index][value - 1] = 0;
+                    }
+                }
+            }
+        }
+
+        self.guess_data = guess_data;
     }
 }

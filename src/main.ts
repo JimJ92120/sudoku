@@ -61,7 +61,7 @@ window.addEventListener("load", () => {
     scene.$eventListener.addEventListener("generate-new", (event: any) => {
       console.log("generating new data requested...");
 
-      sudoku.generate(100, 78);
+      sudoku.generate(100, 20);
     });
 
     let loop = 0;
