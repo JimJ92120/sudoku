@@ -51,16 +51,12 @@ impl Sudoku {
     }
 
     #[wasm_bindgen]
-    pub fn generate(&mut self, shift_count: usize) {
+    pub fn generate(&mut self, shift_count: usize, remove_count: usize) {
         log(&format!("generating data..."));
 
-        let data: SudokuData = Sudoku::new_data();
-        let guess_data: GuessData = Sudoku::new_guess_data();
+        let mut data: SudokuData = Sudoku::new_data();
 
         // do smth
-
-        self.data = data;
-        self.guess_data = guess_data;
 
         let half_count = if 2 <= shift_count {
             js_sys::Math::floor(shift_count as f64 / 2.0) as usize
@@ -68,41 +64,22 @@ impl Sudoku {
             shift_count
         };
         for _ in 0..=1 {
-            self.shift_rows_randomly(half_count);
-            self.shift_columns_randomly(half_count);
+            data = self.shift_rows_randomly(half_count, data);
+            data = self.shift_columns_randomly(half_count, data);
         }
 
         // drop n cells to be filled
-        // let positions: [[usize; 2]; 10] = [
-        //     [1, 1],
-        //     [8, 3],
-        //     [4, 3],
-        //     [2, 0],
-        //     [0, 5],
-        //     //
-        //     [5, 5],
-        //     [3, 8],
-        //     [7, 5],
-        //     [4, 1],
-        //     [1, 3],
-        // ];
-        // let range = 0..=9;
-        // for index in range {
-        //     let random_position: [usize; 2] = positions[index];
+        // check if remove_count <= 9 x 9 - 1 = 80
+        // does not account possible duplicated random_position
+        for _ in 0..=remove_count {
+            let random_position: [usize; 2] = [rand(8), rand(8)];
 
-        //     if 0 != data[random_position[1]][random_position[0]] {
-        //         let previous_value: usize = data[random_position[1]][random_position[0]];
+            if 0 != data[random_position[1]][random_position[0]] {
+                data[random_position[1]][random_position[0]] = 0;
+            }
+        }
 
-        //         guess_data[random_position[1]][random_position[0]] = guess_data[random_position[1]]
-        //             [random_position[0]]
-        //             .into_iter()
-        //             .map(|x| if previous_value == x { x } else { 0 })
-        //             .collect::<Vec<usize>>()
-        //             .try_into()
-        //             .unwrap();
-        //         data[random_position[1]][random_position[0]] = 0;
-        //     }
-        // }
+        self.data = data;
     }
 
     #[wasm_bindgen]
@@ -168,14 +145,14 @@ impl Sudoku {
         true
     }
 
-    fn shift_rows_randomly(&mut self, shift_count: usize) {
-        let rows: SudokuData = self.data.clone();
+    fn shift_rows_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
+        let rows: SudokuData = data.clone();
 
-        self.data = self.shift_items(shift_count, rows);
+        self.shift_items(shift_count, rows)
     }
 
-    fn shift_columns_randomly(&mut self, shift_count: usize) {
-        let mut columns: SudokuData = get_matrix2_columns(self.data_to_vec(self.data))
+    fn shift_columns_randomly(&mut self, shift_count: usize, data: SudokuData) -> SudokuData {
+        let mut columns: SudokuData = get_matrix2_columns(self.data_to_vec(data))
             .into_iter()
             .map(|x| x.try_into().unwrap())
             .collect::<Vec<[usize; 9]>>()
@@ -183,12 +160,12 @@ impl Sudoku {
             .unwrap();
         columns = self.shift_items(shift_count, columns.clone());
 
-        self.data = get_matrix2_columns(self.data_to_vec(columns))
+        get_matrix2_columns(self.data_to_vec(columns))
             .into_iter()
             .map(|x| x.try_into().unwrap())
             .collect::<Vec<[usize; 9]>>()
             .try_into()
-            .unwrap();
+            .unwrap()
     }
 
     fn _auto_fill(&mut self) -> Vec<[usize; 2]> {
