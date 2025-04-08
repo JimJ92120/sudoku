@@ -11,6 +11,7 @@ type State = {
   autoFill: boolean;
   shuffleCount: number;
   difficulty: number;
+  finished: boolean;
 };
 
 window.addEventListener("load", () => {
@@ -40,9 +41,15 @@ window.addEventListener("load", () => {
       autoFill: false,
       shuffleCount: 10,
       difficulty: 1,
+      finished: false,
     };
 
     //
+    const resetSceneHighltedPosition = () => {
+      setTimeout(() => {
+        scene.filledPositions = [];
+      }, 500);
+    };
     const onInput = (data: SceneInputEvent) => {
       if (data.position) {
         state.selectedPosition = data.position;
@@ -57,9 +64,14 @@ window.addEventListener("load", () => {
             }`
           );
         } else if (sudoku.is_filled()) {
+          state.finished = true;
+
           setTimeout(() => {
             alert("finished!");
           }, 1000);
+        } else {
+          scene.filledPositions = [state.selectedPosition];
+          resetSceneHighltedPosition();
         }
       }
     };
@@ -75,14 +87,11 @@ window.addEventListener("load", () => {
       "input-selected",
       (event: any) => {
         onInput(event.detail);
-
-        if (state.autoFill) {
-          sudoku.auto_fill();
-        }
       }
     );
     sceneEvents.$eventListener.addEventListener("generate-new", () => {
       sudoku.generate(state.shuffleCount, state.difficulty);
+      state.finished = false;
     });
     sceneEvents.$eventListener.addEventListener("auto-fill", (event: any) => {
       state.autoFill = Boolean(event.detail.autoFill);
@@ -99,6 +108,14 @@ window.addEventListener("load", () => {
         state.difficulty = Number(event.detail.difficulty);
       }
     );
+
+    // feels more "natural" as change is too quick in render loop
+    setInterval(() => {
+      if (!state.finished && state.autoFill) {
+        scene.filledPositions = sudoku.auto_fill();
+        resetSceneHighltedPosition();
+      }
+    }, 1000);
 
     // render loop
     let loop = 0;

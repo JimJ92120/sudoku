@@ -14,9 +14,10 @@ type SceneInputEvent = {
 };
 class Scene {
   selectedPosition: Vec2 | null = null;
+  filledPositions: Vec2[] = [];
+
   private $canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
-  private filledPositions: Vec2[] = [];
 
   constructor($canvas: HTMLCanvasElement) {
     this.$canvas = $canvas;
