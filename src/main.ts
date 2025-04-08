@@ -68,7 +68,7 @@ window.addEventListener("load", () => {
 
       if (!sudoku.update_cell(state.selectedPosition, value)) {
         console.error(
-          `not allowed to update [${state.selectedPosition}] with value ${value}`
+          `not allowed to update [${state.selectedPosition}] with value ${value} or stack not updated`
         );
 
         return;
