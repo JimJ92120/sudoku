@@ -62,7 +62,15 @@ impl Sudoku {
         self.data = data;
         self.guess_data = guess_data;
 
-        self.shift_rows(shift_count);
+        let half_count = if 2 <= shift_count {
+            js_sys::Math::floor(shift_count as f64 / 2.0) as usize
+        } else {
+            shift_count
+        };
+        for _ in 0..=1 {
+            self.shift_rows_randomly(half_count);
+            self.shift_columns_randomly(half_count);
+        }
 
         // drop n cells to be filled
         // let positions: [[usize; 2]; 10] = [
@@ -98,42 +106,6 @@ impl Sudoku {
     }
 
     #[wasm_bindgen]
-    pub fn shift_rows(&mut self, shift_count: usize) {
-        let rows: SudokuData = self.data.clone();
-        let mut rows_group: [Vec<[usize; 9]>; 3] = [
-            rows[0..=2].to_vec(),
-            rows[3..=5].to_vec(),
-            rows[6..=8].to_vec(),
-        ];
-
-        // log(&format!("shift_rows():"));
-        // for index in 0..=2 {
-        //     for _index in 0..=2 {
-        //         log(&format!("{:?}", rows_group[index][_index]));
-        //     }
-
-        //     log("\n");
-        // }
-
-        for _ in 0..=(shift_count - 1) {
-            for index in 0..=2 {
-                rows_group[index] = shuffle_vecto_matrix2_rows(rows_group[index].clone());
-            }
-
-            rows_group = shuffle_vecto_matrix2_rows::<Vec<[usize; 9]>>(rows_group.clone().to_vec())
-                .try_into()
-                .unwrap();
-        }
-
-        let rows_group: Vec<[usize; 9]> = rows_group
-            .into_iter()
-            .flatten()
-            .collect::<Vec<[usize; 9]>>();
-
-        self.data = rows_group.try_into().unwrap();
-    }
-
-    #[wasm_bindgen]
     pub fn update_cell(&mut self, position: JsValue, new_value: usize) -> bool {
         let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
 
@@ -161,7 +133,16 @@ impl Sudoku {
 
     #[wasm_bindgen]
     pub fn is_filled(&mut self) -> bool {
-        let data: [&SudokuData; 3] = [&self.data.clone(), &self.get_columns(), &self.get_zones()];
+        let data: [&SudokuData; 3] = [
+            &self.data.clone(),
+            &get_matrix2_columns(self.data_to_vec(self.data))
+                .into_iter()
+                .map(|x| x.try_into().unwrap())
+                .collect::<Vec<[usize; 9]>>()
+                .try_into()
+                .unwrap(),
+            &self.get_zones(),
+        ];
 
         for index in 0..=2 {
             let _data: &SudokuData = data[index];
@@ -185,6 +166,29 @@ impl Sudoku {
         }
 
         true
+    }
+
+    fn shift_rows_randomly(&mut self, shift_count: usize) {
+        let rows: SudokuData = self.data.clone();
+
+        self.data = self.shift_items(shift_count, rows);
+    }
+
+    fn shift_columns_randomly(&mut self, shift_count: usize) {
+        let mut columns: SudokuData = get_matrix2_columns(self.data_to_vec(self.data))
+            .into_iter()
+            .map(|x| x.try_into().unwrap())
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap();
+        columns = self.shift_items(shift_count, columns.clone());
+
+        self.data = get_matrix2_columns(self.data_to_vec(columns))
+            .into_iter()
+            .map(|x| x.try_into().unwrap())
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap();
     }
 
     fn _auto_fill(&mut self) -> Vec<[usize; 2]> {
@@ -366,26 +370,12 @@ impl Sudoku {
         return false;
     }
 
-    fn get_columns(&self) -> SudokuData {
-        let range: std::ops::RangeInclusive<usize> = 0..=8;
-
-        range
-            .clone()
+    fn data_to_vec(&self, data: SudokuData) -> Vec<Vec<usize>> {
+        data.clone()
+            .to_vec()
             .into_iter()
-            .map(|column_index| {
-                let _row: [usize; 9] = range
-                    .clone()
-                    .into_iter()
-                    .map(|row_index| self.data.clone()[row_index as usize][column_index])
-                    .collect::<Vec<usize>>()
-                    .try_into()
-                    .unwrap();
-
-                _row
-            })
-            .collect::<Vec<[usize; 9]>>()
-            .try_into()
-            .unwrap()
+            .map(|x| x.to_vec())
+            .collect()
     }
 
     fn get_zones(&self) -> SudokuData {
@@ -415,6 +405,32 @@ impl Sudoku {
 
                 row
             })
+            .collect::<Vec<[usize; 9]>>()
+            .try_into()
+            .unwrap()
+    }
+
+    fn shift_items(&mut self, shift_count: usize, items: SudokuData) -> SudokuData {
+        let rows: SudokuData = items.clone();
+        let mut rows_group: [Vec<[usize; 9]>; 3] = [
+            rows[0..=2].to_vec(),
+            rows[3..=5].to_vec(),
+            rows[6..=8].to_vec(),
+        ];
+
+        for _ in 0..=(shift_count - 1) {
+            for index in 0..=2 {
+                rows_group[index] = shuffle_matrix2_rows(rows_group[index].clone());
+            }
+
+            rows_group = shuffle_matrix2_rows::<Vec<[usize; 9]>>(rows_group.clone().to_vec())
+                .try_into()
+                .unwrap();
+        }
+
+        rows_group
+            .into_iter()
+            .flatten()
             .collect::<Vec<[usize; 9]>>()
             .try_into()
             .unwrap()

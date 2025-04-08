@@ -37,7 +37,7 @@ pub fn shuffle_range(
     result
 }
 
-pub fn shuffle_vecto_matrix2_rows<T>(maxtrix2: Vec<T>) -> Vec<T>
+pub fn shuffle_matrix2_rows<T>(maxtrix2: Vec<T>) -> Vec<T>
 where
     T: Clone,
 {
@@ -55,4 +55,27 @@ where
     }
 
     new_matrix
+}
+
+pub fn get_matrix2_columns<T>(matrix2: Vec<Vec<T>>) -> Vec<Vec<T>>
+where
+    T: Clone,
+{
+    let row_range = 0..=(matrix2.len() - 1);
+    let column_range = 0..=(matrix2[0].len() - 1);
+    let clone: Vec<Vec<T>> = matrix2.clone();
+
+    column_range
+        .clone()
+        .into_iter()
+        .map(|column_index| {
+            row_range
+                .clone()
+                .into_iter()
+                .map(|row_index| clone[row_index as usize][column_index].clone())
+                .collect::<Vec<T>>()
+        })
+        .collect::<Vec<Vec<T>>>()
+        .try_into()
+        .unwrap()
 }
