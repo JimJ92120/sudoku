@@ -110,6 +110,8 @@ window.addEventListener("load", () => {
     //
     sceneEvents.addEventListener(EventName.Restart, () => {
       console.log("restart");
+
+      sudoku.restart();
     });
 
     // feels more "natural" as change is too quick in render loop

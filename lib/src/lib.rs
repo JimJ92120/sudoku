@@ -31,7 +31,7 @@ impl Game {
         serde_wasm_bindgen::to_value(&self.sudoku.guess_data()).unwrap()
     }
 
-    // wasm
+    //
     #[wasm_bindgen]
     pub fn generate(&mut self, shift_count: usize, remove_count: usize) {
         self.sudoku.generate(shift_count, remove_count);
@@ -42,7 +42,6 @@ impl Game {
         self.sudoku.is_filled()
     }
 
-    // wasm wrappers
     #[wasm_bindgen]
     pub fn update_cell(&mut self, position: JsValue, new_value: usize) -> bool {
         let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
@@ -60,5 +59,10 @@ impl Game {
             .collect::<Vec<Vec<usize>>>();
 
         serde_wasm_bindgen::to_value(&result.clone()).unwrap()
+    }
+
+    #[wasm_bindgen]
+    pub fn restart(&mut self) {
+        self.sudoku.restart();
     }
 }

@@ -1,5 +1,11 @@
 # sudoku
 
+To add:
+
+- restart (with same board) => sudoku.data_shadow: SudokuData
+- undo (until start) => sudoku.moves: [usize; 2][]
+- erase possible value => use sudoku.data_shadow to check if can
+
 ---
 
 ---

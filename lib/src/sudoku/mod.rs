@@ -15,16 +15,16 @@ type GuessData = [GuessRow; 9];
 pub struct Sudoku {
     data: SudokuData,
     guess_data: GuessData,
+    shadow_data: SudokuData,
 }
 
 impl Sudoku {
     pub fn new() -> Self {
-        let sudoku = Self {
+        Self {
             data: Sudoku::new_data(),
             guess_data: Sudoku::new_guess_data(),
-        };
-
-        sudoku
+            shadow_data: Sudoku::new_data(),
+        }
     }
 
     // getters
@@ -195,7 +195,14 @@ impl Sudoku {
             }
         }
 
-        self.data = data;
+        self.data = data.clone();
+        self.shadow_data = data.clone();
+        self.reset_guess_data();
+    }
+
+    pub fn restart(&mut self) {
+        self.data = self.shadow_data.clone();
+
         self.reset_guess_data();
     }
 
