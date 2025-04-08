@@ -206,6 +206,19 @@ impl Sudoku {
         self.reset_guess_data();
     }
 
+    pub fn erase(&mut self, position: [usize; 2]) -> bool {
+        if 0 == self.shadow_data[position[1]][position[0]]
+            && 0 < self.data[position[1]][position[0]]
+        {
+            self.data[position[1]][position[0]] = 0;
+            self.reset_guess_data();
+
+            return true;
+        }
+
+        false
+    }
+
     //
     fn can_update_cell(&self, position: [usize; 2], new_value: usize) -> bool {
         let is_set: bool = 0 != self.data[position[1]][position[0]];

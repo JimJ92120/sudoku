@@ -65,4 +65,11 @@ impl Game {
     pub fn restart(&mut self) {
         self.sudoku.restart();
     }
+
+    #[wasm_bindgen]
+    pub fn erase(&mut self, position: JsValue) -> bool {
+        let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
+
+        self.sudoku.erase(position)
+    }
 }
