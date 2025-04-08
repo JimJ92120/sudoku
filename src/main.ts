@@ -10,9 +10,13 @@ window.addEventListener("load", () => {
     app.render();
 
     const $faceMap: HTMLPreElement = app.$container.querySelector("#map")!;
-    const scene = new Scene(app.$container.querySelector("#scene")!, [
-      ...app.$container.querySelectorAll(".controls__button").values(),
-    ] as HTMLElement[]);
+    const scene = new Scene(
+      app.$container.querySelector("#scene")!,
+      [
+        ...app.$container.querySelectorAll(".controls__button").values(),
+      ] as HTMLElement[],
+      app.$container.querySelector("#generate")!
+    );
 
     //
     const sudoku = new Sudoku();
@@ -28,7 +32,7 @@ window.addEventListener("load", () => {
 
       if ((data.value || 0 === data.value) && selectedPosition) {
         console.log(
-          `updating [${selectedPosition.join(", ")}] with ${data.value}`
+          `updating [${selectedPosition.join(", ")}] with ${data.value}...`
         );
 
         if (!sudoku.update_cell(selectedPosition, data.value)) {
@@ -52,6 +56,11 @@ window.addEventListener("load", () => {
     });
     scene.$eventListener.addEventListener("input-selected", (event: any) => {
       onInput(event.detail);
+    });
+    scene.$eventListener.addEventListener("generate-new", (event: any) => {
+      console.log("generating new data requested...");
+
+      sudoku.generate();
     });
 
     let loop = 0;
