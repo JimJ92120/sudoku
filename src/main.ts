@@ -1,5 +1,5 @@
 // @ts-ignore
-import init, { Sudoku } from "../dist/lib";
+import init, { Game } from "../dist/lib";
 import { Vec2 } from "./type";
 
 import { App } from "./App";
@@ -35,7 +35,7 @@ window.addEventListener("load", () => {
     });
 
     //
-    const sudoku = new Sudoku();
+    const sudoku = new Game();
     const state: State = {
       selectedPosition: null,
       autoFill: false,
