@@ -112,10 +112,10 @@ impl Sudoku {
     }
 
     #[wasm_bindgen]
-    pub fn update_cell(&mut self, position: JsValue, new_value: usize) {
+    pub fn update_cell(&mut self, position: JsValue, new_value: usize) -> bool {
         let position: [usize; 2] = serde_wasm_bindgen::from_value(position).unwrap();
 
-        self._update_cell(position, new_value);
+        self._update_cell(position, new_value)
     }
 
     #[wasm_bindgen]
@@ -253,20 +253,16 @@ impl Sudoku {
         guess_data.clone()
     }
 
-    fn _update_cell(&mut self, position: [usize; 2], new_value: usize) {
+    fn _update_cell(&mut self, position: [usize; 2], new_value: usize) -> bool {
         log(&format!(
             "attempting to update_cell() at position {:?} with value {:?}",
             position, new_value
         ));
 
         if !self.can_update_cell(position, new_value) {
-            return;
+            return false;
         }
 
-        // let zone_position: [usize; 2] = [
-        //     (((position[0] / 3) as f64).floor()) as usize,
-        //     (((position[1] / 3) as f64).floor()) as usize,
-        // ];
         let related_positions: [[[usize; 2]; 9]; 3] = self._get_related_cells_positions(position);
 
         // update cell
@@ -285,6 +281,8 @@ impl Sudoku {
         }
 
         log(&format!("update_cell() at {:?}: OK", position));
+
+        true
     }
 
     fn _get_related_cells_positions(&self, position: [usize; 2]) -> [[[usize; 2]; 9]; 3] {
