@@ -18,6 +18,7 @@ type SceneEventsElements = {
   $difficultyText: HTMLElement;
   $restartButton: HTMLElement;
   $eraseButton: HTMLElement;
+  $undoButton: HTMLElement;
 };
 
 enum EventName {
@@ -29,13 +30,13 @@ enum EventName {
   ShuffleCountUpdated = "shuffle-count-updated",
   Restart = "restart",
   Erase = "erase",
+  Undo = "undo",
 }
 
+// auto-bind event listeners for default cases
 class SceneEvents {
   private $eventListener: HTMLElement;
   private elements: SceneEventsElements;
-
-  // private selectedPosition: Vec2 | null = null;
 
   constructor(elements: SceneEventsElements) {
     this.$eventListener = document.createElement("div") as HTMLElement;
@@ -76,6 +77,9 @@ class SceneEvents {
     });
     this.elements.$eraseButton.addEventListener("click", () => {
       this.onEraseButtonEventCallback();
+    });
+    this.elements.$undoButton.addEventListener("click", () => {
+      this.onUndoButtonEventCallback();
     });
   }
 
@@ -164,6 +168,10 @@ class SceneEvents {
 
   private onEraseButtonEventCallback(): void {
     this.$eventListener.dispatchEvent(new CustomEvent(EventName.Erase));
+  }
+
+  private onUndoButtonEventCallback(): void {
+    this.$eventListener.dispatchEvent(new CustomEvent(EventName.Undo));
   }
 }
 

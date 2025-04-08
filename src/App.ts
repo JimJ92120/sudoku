@@ -23,6 +23,9 @@ class App {
       <button id="restart">Restart</button>
     </div>
     <div>
+      <button id="undo">Undo</button>
+    </div>
+    <div>
       <label>Auto-fill</label>
       <input type="checkbox" id="auto-fill"></input>
     </div>

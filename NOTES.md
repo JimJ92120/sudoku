@@ -2,9 +2,6 @@
 
 To add:
 
-- undo (until start) => sudoku.moves: [usize; 2][]
-- erase possible value => use sudoku.data_shadow to check if can
-
 ---
 
 ---

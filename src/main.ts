@@ -42,6 +42,7 @@ window.addEventListener("load", () => {
       $difficultyText: app.$container.querySelector("#difficulty-value")!,
       $restartButton: app.$container.querySelector("#restart")!,
       $eraseButton: app.$container.querySelector("#erase")!,
+      $undoButton: app.$container.querySelector("#undo")!,
     });
 
     //
@@ -55,6 +56,7 @@ window.addEventListener("load", () => {
     };
 
     // events
+    // actions
     sceneEvents.addEventListener(EventName.InputSelected, (event: any) => {
       const { value } = event.detail;
 
@@ -93,7 +95,8 @@ window.addEventListener("load", () => {
       sudoku.generate(state.shuffleCount * 100, state.difficulty);
       state.finished = false;
     });
-    //
+    sceneEvents.addEventListener(EventName.Undo, () => sudoku.undo());
+    // state update
     sceneEvents.addEventListener(EventName.PositionSelected, (event: any) => {
       state.selectedPosition = event.detail.position;
       scene.selectedPosition = event.detail.position;
