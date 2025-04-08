@@ -31,17 +31,16 @@ window.addEventListener("load", () => {
           `updating [${selectedPosition.join(", ")}] with ${data.value}`
         );
 
-        const isUpdated: Boolean = sudoku.update_cell(
-          selectedPosition,
-          data.value
-        );
-
-        if (!isUpdated) {
+        if (!sudoku.update_cell(selectedPosition, data.value)) {
           alert(
             `unable to update [${selectedPosition.join(", ")}] with ${
               data.value
             }`
           );
+        } else if (sudoku.is_filled()) {
+          setTimeout(() => {
+            alert("finished!");
+          }, 1000);
         }
       }
     };
