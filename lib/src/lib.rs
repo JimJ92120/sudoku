@@ -74,7 +74,7 @@ impl Game {
     }
 
     #[wasm_bindgen]
-    pub fn undo(&mut self) {
-        self.sudoku.pop_last_move_position();
+    pub fn undo(&mut self) -> bool {
+        self.sudoku.pop_last_move_position()
     }
 }

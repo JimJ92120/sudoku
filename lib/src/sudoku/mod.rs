@@ -204,12 +204,13 @@ impl Sudoku {
 
         self.data = data.clone();
         self.shadow_data = data.clone();
+        self.move_positions_stack = vec![];
         self.reset_guess_data();
     }
 
     pub fn restart(&mut self) {
         self.data = self.shadow_data.clone();
-
+        self.move_positions_stack = vec![];
         self.reset_guess_data();
     }
 
@@ -226,16 +227,21 @@ impl Sudoku {
         false
     }
 
-    pub fn pop_last_move_position(&mut self) {
+    pub fn pop_last_move_position(&mut self) -> bool {
         let last_position = self.move_positions_stack.pop();
 
+        // assumed true
         if !last_position.is_none() {
             let last_position: [usize; 2] = last_position.unwrap();
 
             self.data[last_position[1]][last_position[0]] = 0;
 
             self.reset_guess_data();
+
+            return true;
         }
+
+        false
     }
 
     //
