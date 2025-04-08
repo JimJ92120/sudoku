@@ -23,6 +23,7 @@ class App {
       <button id="restart">Restart</button>
     </div>
     <div>
+      <button id="erase">Erase</button>
       <button id="undo">Undo</button>
     </div>
     <div>
@@ -47,8 +48,6 @@ class App {
           }</div>`,
         ""
       )}
-
-      <button id="erase">Erase</button>
     </div>
   </div>
 
@@ -66,13 +65,6 @@ class App {
       margin-bottom: 1rem
     }
 
-    #generate,
-    #restart {
-      width: fit-content;
-
-      margin-left: auto;
-      margin-right: auto;
-    }
     #auto-fill {
       position: relative;
       top: 0.15rem;
