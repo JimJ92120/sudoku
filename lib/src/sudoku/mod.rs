@@ -16,14 +16,17 @@ pub struct Sudoku {
     data: SudokuData,
     guess_data: GuessData,
     shadow_data: SudokuData,
+    move_positions_stack: Vec<[usize; 2]>,
 }
 
+// missing checks for position in range
 impl Sudoku {
     pub fn new() -> Self {
         Self {
             data: Sudoku::new_data(),
             guess_data: Sudoku::new_guess_data(),
             shadow_data: Sudoku::new_data(),
+            move_positions_stack: vec![],
         }
     }
 
@@ -163,9 +166,9 @@ impl Sudoku {
 
         let related_positions: [[[usize; 2]; 9]; 3] = self.get_related_cells_positions(position);
 
-        // update cell
+        // update data
         self.data[position[1]][position[0]] = new_value;
-        // update related positions
+        // update guess_data
         for index in 0..=2 {
             let _related_positions = related_positions[index];
 
@@ -176,6 +179,10 @@ impl Sudoku {
                     self.guess_data[_position[1]][_position[0]][new_value - 1] = 0;
                 }
             }
+        }
+        // update move_positions_stack
+        if !self.add_move_position(position) {
+            return false;
         }
 
         true
@@ -219,30 +226,19 @@ impl Sudoku {
         false
     }
 
-    //
-    fn can_update_cell(&self, position: [usize; 2], new_value: usize) -> bool {
-        let is_set: bool = 0 != self.data[position[1]][position[0]];
-        let are_related_cells_set: bool =
-            0 == self.guess_data[position[1]][position[0]][new_value - 1];
+    pub fn pop_last_move_position(&mut self) {
+        let last_position = self.move_positions_stack.pop();
 
-        if !is_set && !are_related_cells_set && 0 < new_value && 10 > new_value {
-            return true;
+        if !last_position.is_none() {
+            let last_position: [usize; 2] = last_position.unwrap();
+
+            self.data[last_position[1]][last_position[0]] = 0;
+
+            self.reset_guess_data();
         }
-
-        // debug
-        // if is_set {
-        //     log(&format!("!!! cell at {:?} is already set", position));
-        // } else if are_related_cells_set {
-        //     log(&format!(
-        //         "!!! cell at {:?} is already set in related positions",
-        //         position
-        //     ));
-        // }
-        //
-
-        return false;
     }
 
+    //
     fn generate_random_data(&mut self, shift_count: usize) -> SudokuData {
         let mut data: SudokuData = Sudoku::new_data();
         let half_count = if 2 <= shift_count {
@@ -303,6 +299,17 @@ impl Sudoku {
             .collect::<Vec<[usize; 9]>>()
             .try_into()
             .unwrap()
+    }
+
+    fn add_move_position(&mut self, position: [usize; 2]) -> bool {
+        if 0 < self.data[position[1]][position[0]] && !self.move_positions_stack.contains(&position)
+        {
+            self.move_positions_stack.push(position);
+
+            return true;
+        }
+
+        false
     }
 
     // helpers
@@ -406,5 +413,28 @@ impl Sudoku {
             .into_iter()
             .map(|x| x.to_vec())
             .collect()
+    }
+
+    fn can_update_cell(&self, position: [usize; 2], new_value: usize) -> bool {
+        let is_set: bool = 0 != self.data[position[1]][position[0]];
+        let are_related_cells_set: bool =
+            0 == self.guess_data[position[1]][position[0]][new_value - 1];
+
+        if !is_set && !are_related_cells_set && 0 < new_value && 10 > new_value {
+            return true;
+        }
+
+        // debug
+        // if is_set {
+        //     log(&format!("!!! cell at {:?} is already set", position));
+        // } else if are_related_cells_set {
+        //     log(&format!(
+        //         "!!! cell at {:?} is already set in related positions",
+        //         position
+        //     ));
+        // }
+        //
+
+        return false;
     }
 }

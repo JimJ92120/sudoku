@@ -72,4 +72,9 @@ impl Game {
 
         self.sudoku.erase(position)
     }
+
+    #[wasm_bindgen]
+    pub fn undo(&mut self) {
+        self.sudoku.pop_last_move_position();
+    }
 }
