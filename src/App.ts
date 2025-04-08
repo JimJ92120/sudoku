@@ -17,6 +17,8 @@ class App {
     <pre id="map"></pre>
   </p>
 
+  <button id="generate">Generate</button>
+
   <div class="controls">
     ${[...Array(9).keys()].reduce(
       (_result, index) =>
@@ -38,6 +40,7 @@ class App {
       max-width: 300px;
       margin-left: auto;
       margin-right: auto;
+      margin-top: 1rem;
     }
     .controls__button {
       display: inline;
