@@ -220,6 +220,14 @@ impl Sudoku {
         {
             self.data[position[1]][position[0]] = 0;
             self.reset_guess_data();
+            // self.move_positions_stack = self.move_positions_stack.into_iter()
+
+            self.move_positions_stack = self
+                .move_positions_stack
+                .clone()
+                .into_iter()
+                .filter(|x| position[0] != x[0] && position[1] != x[1])
+                .collect();
 
             return true;
         }
