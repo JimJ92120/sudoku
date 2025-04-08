@@ -13,87 +13,18 @@ type SceneInputEvent = {
   value?: number;
 };
 class Scene {
-  readonly $eventListener: HTMLElement;
+  selectedPosition: Vec2 | null = null;
   private $canvas: HTMLCanvasElement;
-  private $inputButtons: HTMLElement[];
-  private $generateButton: HTMLButtonElement;
-
   private context: CanvasRenderingContext2D;
-  private selectedPosition: Vec2 | null = null;
   private filledPositions: Vec2[] = [];
 
-  constructor(
-    $canvas: HTMLCanvasElement,
-    $inputButtons: HTMLElement[],
-    $generateButton: HTMLButtonElement
-  ) {
-    this.$eventListener = document.createElement("div") as HTMLElement;
+  constructor($canvas: HTMLCanvasElement) {
     this.$canvas = $canvas;
-    this.$inputButtons = $inputButtons;
-    this.$generateButton = $generateButton;
 
     this.context = this.$canvas.getContext("2d")!;
     this.$canvas.width = SCENE_WIDTH;
     this.$canvas.height = SCENE_HEIGHT;
     this.$canvas.style.backgroundColor = this.rgba(COLORS.BACKGROUND);
-
-    this.$canvas.addEventListener("click", (event: MouseEvent) =>
-      this.onMouseClickCallback(event)
-    );
-    this.$inputButtons.map(($button) => {
-      $button.addEventListener("click", (event: MouseEvent) => {
-        this.onInputButtonClickCallback(event);
-      });
-    });
-    this.$generateButton.addEventListener("click", (event: MouseEvent) => {
-      this.onGenerateButtonClickEventCallback(event);
-    });
-  }
-
-  onMouseClickCallback(event: MouseEvent): void {
-    const rect = this.$canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-
-    this.selectedPosition = [
-      Math.floor(x / CELL_SIZE),
-      Math.floor(y / CELL_SIZE),
-    ];
-
-    this.$eventListener.dispatchEvent(
-      new CustomEvent("position-selected", {
-        detail: {
-          position: this.selectedPosition,
-        } as SceneInputEvent,
-      })
-    );
-
-    // duplicated
-    this.$inputButtons.map(($element) => {
-      $element.classList.remove("controls__button--selected");
-    });
-  }
-
-  onInputButtonClickCallback(event: MouseEvent): void {
-    const $target: HTMLElement = event.target as HTMLElement;
-    const value = $target.getAttribute("data-value");
-
-    this.$eventListener.dispatchEvent(
-      new CustomEvent("input-selected", {
-        detail: {
-          value: "" !== value ? Number(value) : null,
-        } as SceneInputEvent,
-      })
-    );
-
-    this.$inputButtons.map(($element) => {
-      $element.classList.remove("controls__button--selected");
-    });
-    $target.classList.add("controls__button--selected");
-  }
-
-  onGenerateButtonClickEventCallback(event: MouseEvent): void {
-    this.$eventListener.dispatchEvent(new CustomEvent("generate-new"));
   }
 
   //

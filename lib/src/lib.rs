@@ -396,6 +396,7 @@ impl Sudoku {
             shift_count
         };
         for _ in 0..=1 {
+            // possibly add inverse rows and columns indices
             data = self.shift_rows_randomly(half_count, data);
             data = self.shift_columns_randomly(half_count, data);
         }

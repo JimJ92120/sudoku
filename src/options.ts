@@ -1,6 +1,6 @@
 import { Vec4 } from "./type";
 
-const SCENE_WIDTH = 600;
+const SCENE_WIDTH = 510;
 const SCENE_HEIGHT = SCENE_WIDTH;
 
 const ZONE_SIZE = SCENE_WIDTH / 3;
