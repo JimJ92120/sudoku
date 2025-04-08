@@ -20,36 +20,6 @@ function resetSceneHighltedPosition(scene: Scene) {
     scene.filledPositions = [];
   }, 500);
 }
-function onInput(
-  scene: Scene,
-  state: State,
-  sudoku: Game,
-  data: SceneInputEvent
-) {
-  if (data.position) {
-    state.selectedPosition = data.position;
-    scene.selectedPosition = data.position;
-  }
-
-  if ((data.value || 0 === data.value) && state.selectedPosition) {
-    if (!sudoku.update_cell(state.selectedPosition, data.value)) {
-      alert(
-        `unable to update [${state.selectedPosition.join(", ")}] with ${
-          data.value
-        }`
-      );
-    } else if (sudoku.is_filled()) {
-      state.finished = true;
-
-      setTimeout(() => {
-        alert("finished!");
-      }, 1000);
-    } else {
-      scene.filledPositions = [state.selectedPosition];
-      resetSceneHighltedPosition(scene);
-    }
-  }
-}
 
 window.addEventListener("load", () => {
   init().then(() => {
@@ -71,6 +41,7 @@ window.addEventListener("load", () => {
       $difficultyInput: app.$container.querySelector("#difficulty")!,
       $difficultyText: app.$container.querySelector("#difficulty-value")!,
       $restartButton: app.$container.querySelector("#restart")!,
+      $eraseButton: app.$container.querySelector("#erase")!,
     });
 
     //
@@ -84,16 +55,48 @@ window.addEventListener("load", () => {
     };
 
     // events
-    sceneEvents.addEventListener(EventName.PositionSelected, (event: any) =>
-      onInput(scene, state, sudoku, event.detail)
-    );
-    sceneEvents.addEventListener(EventName.InputSelected, (event: any) =>
-      onInput(scene, state, sudoku, event.detail)
-    );
-    //
+    sceneEvents.addEventListener(EventName.InputSelected, (event: any) => {
+      const { value } = event.detail;
+
+      if (!value || 0 > value || !state.selectedPosition) {
+        console.error(`missing value or position`);
+
+        return;
+      }
+
+      if (!sudoku.update_cell(state.selectedPosition, value)) {
+        console.error(
+          `not allowed to update [${state.selectedPosition}] with value ${value}`
+        );
+
+        return;
+      }
+
+      if (sudoku.is_filled()) {
+        state.finished = true;
+
+        setTimeout(() => {
+          alert("Finished!");
+        }, 500);
+      } else {
+        scene.filledPositions = [state.selectedPosition!];
+        resetSceneHighltedPosition(scene);
+      }
+    });
+    sceneEvents.addEventListener(EventName.Restart, () => sudoku.restart());
+    sceneEvents.addEventListener(EventName.Erase, () => {
+      if (state.selectedPosition && !sudoku.erase(state.selectedPosition)) {
+        console.error(`not allowed to erase [${state.selectedPosition}]`);
+      }
+    });
     sceneEvents.addEventListener(EventName.Generate, () => {
       sudoku.generate(state.shuffleCount * 100, state.difficulty);
       state.finished = false;
+    });
+    //
+    sceneEvents.addEventListener(EventName.PositionSelected, (event: any) => {
+      state.selectedPosition = event.detail.position;
+      scene.selectedPosition = event.detail.position;
     });
     sceneEvents.addEventListener(EventName.AutoFill, (event: any) => {
       state.autoFill = Boolean(event.detail.autoFill);
@@ -107,12 +110,6 @@ window.addEventListener("load", () => {
         state.shuffleCount = Number(event.detail.shufflCount);
       }
     );
-    //
-    sceneEvents.addEventListener(EventName.Restart, () => {
-      console.log("restart");
-
-      sudoku.restart();
-    });
 
     // feels more "natural" as change is too quick in render loop
     setInterval(() => {
@@ -128,7 +125,7 @@ window.addEventListener("load", () => {
       if (loop > 0) {
         $debug.innerText = sudoku.is_filled()
           ? "filled and valid"
-          : "not filled";
+          : "not filled or not valid";
 
         scene.render(sudoku.data, sudoku.guess_data);
       }

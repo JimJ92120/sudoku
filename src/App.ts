@@ -44,6 +44,8 @@ class App {
           }</div>`,
         ""
       )}
+
+      <button id="erase">Erase</button>
     </div>
   </div>
 
@@ -83,7 +85,8 @@ class App {
       max-width: 300px;
       margin-left: auto;
       margin-right: auto;
-      margin-top: 1rem;
+      align-items: center;
+      justify-content: center;
     }
     .inputs__button {
       display: inline;

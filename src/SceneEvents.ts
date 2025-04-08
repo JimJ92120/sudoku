@@ -17,6 +17,7 @@ type SceneEventsElements = {
   $difficultyInput: HTMLInputElement;
   $difficultyText: HTMLElement;
   $restartButton: HTMLElement;
+  $eraseButton: HTMLElement;
 };
 
 enum EventName {
@@ -27,6 +28,7 @@ enum EventName {
   DifficultyUpdated = "difficulty-updated",
   ShuffleCountUpdated = "shuffle-count-updated",
   Restart = "restart",
+  Erase = "erase",
 }
 
 class SceneEvents {
@@ -39,35 +41,42 @@ class SceneEvents {
     this.$eventListener = document.createElement("div") as HTMLElement;
     this.elements = elements;
 
-    this.elements.$canvas.addEventListener("click", (event: MouseEvent) =>
-      this.onCanvasClickCallback(event)
-    );
-    this.elements.$inputButtons.map(($button) => {
-      $button.addEventListener("click", (event: MouseEvent) => {
-        this.onInputButtonClickCallback(event);
-      });
-    });
-    this.elements.$generateButton.addEventListener("click", () => {
-      this.onGenerateButtonClickEventCallback();
-    });
-    this.elements.$autoFillInput.addEventListener("change", () =>
-      this.onAutoFillInputCallback()
-    );
-    this.elements.$shuffleCountInput.addEventListener("change", () =>
-      this.onShuffleCountInputCallback()
-    );
-    this.elements.$difficultyInput.addEventListener("change", () =>
-      this.onDifficultyInputCallback()
-    );
-    this.elements.$restartButton.addEventListener("click", () => {
-      this.onRestartButtonClickEventCallback();
-    });
+    this.setEventListeners();
   }
 
   addEventListener(eventName: EventName, eventCallback: (event?: any) => void) {
     this.$eventListener.addEventListener(eventName, (event: any) =>
       eventCallback(event)
     );
+  }
+
+  private setEventListeners(): void {
+    this.elements.$canvas.addEventListener("click", (event: MouseEvent) =>
+      this.onCanvasClickCallback(event)
+    );
+    this.elements.$inputButtons.map(($button) => {
+      $button.addEventListener("click", (event: MouseEvent) => {
+        this.onInputButtonCallback(event);
+      });
+    });
+    this.elements.$generateButton.addEventListener("click", () => {
+      this.onGenerateButtonEventCallback();
+    });
+    this.elements.$autoFillInput.addEventListener("change", () =>
+      this.onAutoFillInputEventCallback()
+    );
+    this.elements.$shuffleCountInput.addEventListener("change", () =>
+      this.onShuffleCountInputEventCallback()
+    );
+    this.elements.$difficultyInput.addEventListener("change", () =>
+      this.onDifficultyInputEventCallback()
+    );
+    this.elements.$restartButton.addEventListener("click", () => {
+      this.onRestartButtonkEventCallback();
+    });
+    this.elements.$eraseButton.addEventListener("click", () => {
+      this.onEraseButtonEventCallback();
+    });
   }
 
   private onCanvasClickCallback(event: MouseEvent): void {
@@ -89,7 +98,7 @@ class SceneEvents {
     });
   }
 
-  private onInputButtonClickCallback(event: MouseEvent): void {
+  private onInputButtonCallback(event: MouseEvent): void {
     const $target: HTMLElement = event.target as HTMLElement;
     const value = $target.getAttribute("data-value");
 
@@ -107,11 +116,11 @@ class SceneEvents {
     $target.classList.add("inputs__button--selected");
   }
 
-  private onGenerateButtonClickEventCallback(): void {
+  private onGenerateButtonEventCallback(): void {
     this.$eventListener.dispatchEvent(new CustomEvent(EventName.Generate));
   }
 
-  private onAutoFillInputCallback(): void {
+  private onAutoFillInputEventCallback(): void {
     this.$eventListener.dispatchEvent(
       new CustomEvent(EventName.AutoFill, {
         detail: {
@@ -121,7 +130,7 @@ class SceneEvents {
     );
   }
 
-  private onDifficultyInputCallback(): void {
+  private onDifficultyInputEventCallback(): void {
     const newValue = Number(this.elements.$difficultyInput.value) || 1;
 
     this.$eventListener.dispatchEvent(
@@ -135,7 +144,7 @@ class SceneEvents {
     this.elements.$difficultyText.innerText = String(newValue || "0");
   }
 
-  private onShuffleCountInputCallback(): void {
+  private onShuffleCountInputEventCallback(): void {
     const newValue = Number(this.elements.$shuffleCountInput.value) || 1;
 
     this.$eventListener.dispatchEvent(
@@ -149,8 +158,12 @@ class SceneEvents {
     this.elements.$shuffleCountText.innerText = String(newValue || "0");
   }
 
-  private onRestartButtonClickEventCallback(): void {
+  private onRestartButtonkEventCallback(): void {
     this.$eventListener.dispatchEvent(new CustomEvent(EventName.Restart));
+  }
+
+  private onEraseButtonEventCallback(): void {
+    this.$eventListener.dispatchEvent(new CustomEvent(EventName.Erase));
   }
 }
 
