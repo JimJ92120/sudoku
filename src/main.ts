@@ -90,7 +90,7 @@ window.addEventListener("load", () => {
       }
     );
     sceneEvents.$eventListener.addEventListener("generate-new", () => {
-      sudoku.generate(state.shuffleCount, state.difficulty);
+      sudoku.generate(state.shuffleCount * 100, state.difficulty);
       state.finished = false;
     });
     sceneEvents.$eventListener.addEventListener("auto-fill", (event: any) => {
