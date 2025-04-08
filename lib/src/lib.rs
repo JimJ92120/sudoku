@@ -1,4 +1,3 @@
-use js_sys::Math::floor;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -8,17 +7,12 @@ use js::*;
 // mod type_d;
 // use type_d::*;
 
-pub struct Value<T>(T);
-
-pub fn vec_to_size<const N: usize>() -> Vec<usize> {
-    let mut range = 1..=(N);
-    let result: Vec<usize> =
-        std::array::from_fn::<usize, N, _>(|_| range.next().expect("too short")).into();
-
-    result.clone()
-}
+mod helpers;
+use helpers::*;
 
 //
+pub struct Value<T>(T);
+
 type Row = [usize; 9];
 type SudokuData = [Row; 9];
 
@@ -38,11 +32,10 @@ pub struct Sudoku {
 impl Sudoku {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
-        let mut sudoku = Self {
+        let sudoku = Self {
             data: Sudoku::new_data(),
             guess_data: Sudoku::new_guess_data(),
         };
-        sudoku.generate();
 
         sudoku
     }
@@ -58,57 +51,86 @@ impl Sudoku {
     }
 
     #[wasm_bindgen]
-    pub fn generate(&mut self) {
+    pub fn generate(&mut self, shift_count: usize) {
         log(&format!("generating data..."));
 
-        let mut data: SudokuData = Sudoku::new_data();
-        let mut guess_data: GuessData = Sudoku::new_guess_data();
+        let data: SudokuData = Sudoku::new_data();
+        let guess_data: GuessData = Sudoku::new_guess_data();
 
-        // shift rows*3 and columns*3 while valid
-        data = [
-            data[6],
-            data[7],
-            data[8],
-            //
-            data[2],
-            data[1],
-            data[0],
-            //
-            data[3],
-            data[4],
-            data[5]
-        ];
-
-        // drop n cells to be filled
-        let positions: [[usize; 2]; 10] = [
-            [1, 1],
-            [8, 3],
-            [4, 3],
-            [2, 0],
-            [0, 5],
-            //
-            [5, 5],
-            [3, 8],
-            [7, 5],
-            [4, 1],
-            [1, 3],
-        ];
-        let range = 0..=9;
-        for index in range {
-            let random_position: [usize; 2] = positions[index];
-
-            if 0 != data[random_position[1]][random_position[0]] {
-                let previous_value: usize = data[random_position[1]][random_position[0]];
-
-                guess_data[random_position[1]][random_position[0]] =
-                    guess_data[random_position[1]][random_position[0]].into_iter()
-                        .map(|x| if previous_value == x { x } else { 0 }).collect::<Vec<usize>>().try_into().unwrap();
-                data[random_position[1]][random_position[0]] = 0;
-            }
-        }
+        // do smth
 
         self.data = data;
         self.guess_data = guess_data;
+
+        self.shift_rows(shift_count);
+
+        // drop n cells to be filled
+        // let positions: [[usize; 2]; 10] = [
+        //     [1, 1],
+        //     [8, 3],
+        //     [4, 3],
+        //     [2, 0],
+        //     [0, 5],
+        //     //
+        //     [5, 5],
+        //     [3, 8],
+        //     [7, 5],
+        //     [4, 1],
+        //     [1, 3],
+        // ];
+        // let range = 0..=9;
+        // for index in range {
+        //     let random_position: [usize; 2] = positions[index];
+
+        //     if 0 != data[random_position[1]][random_position[0]] {
+        //         let previous_value: usize = data[random_position[1]][random_position[0]];
+
+        //         guess_data[random_position[1]][random_position[0]] = guess_data[random_position[1]]
+        //             [random_position[0]]
+        //             .into_iter()
+        //             .map(|x| if previous_value == x { x } else { 0 })
+        //             .collect::<Vec<usize>>()
+        //             .try_into()
+        //             .unwrap();
+        //         data[random_position[1]][random_position[0]] = 0;
+        //     }
+        // }
+    }
+
+    #[wasm_bindgen]
+    pub fn shift_rows(&mut self, shift_count: usize) {
+        let rows: SudokuData = self.data.clone();
+        let mut rows_group: [Vec<[usize; 9]>; 3] = [
+            rows[0..=2].to_vec(),
+            rows[3..=5].to_vec(),
+            rows[6..=8].to_vec(),
+        ];
+
+        // log(&format!("shift_rows():"));
+        // for index in 0..=2 {
+        //     for _index in 0..=2 {
+        //         log(&format!("{:?}", rows_group[index][_index]));
+        //     }
+
+        //     log("\n");
+        // }
+
+        for _ in 0..=(shift_count - 1) {
+            for index in 0..=2 {
+                rows_group[index] = shuffle_vecto_matrix2_rows(rows_group[index].clone());
+            }
+
+            rows_group = shuffle_vecto_matrix2_rows::<Vec<[usize; 9]>>(rows_group.clone().to_vec())
+                .try_into()
+                .unwrap();
+        }
+
+        let rows_group: Vec<[usize; 9]> = rows_group
+            .into_iter()
+            .flatten()
+            .collect::<Vec<[usize; 9]>>();
+
+        self.data = rows_group.try_into().unwrap();
     }
 
     #[wasm_bindgen]
@@ -139,8 +161,8 @@ impl Sudoku {
 
     #[wasm_bindgen]
     pub fn is_filled(&mut self) -> bool {
-        let data: [&SudokuData; 3] = [&self.data.clone(), & self.get_columns(), &self.get_zones()];
-        
+        let data: [&SudokuData; 3] = [&self.data.clone(), &self.get_columns(), &self.get_zones()];
+
         for index in 0..=2 {
             let _data: &SudokuData = data[index];
             let row_match = "123456789";
@@ -322,7 +344,6 @@ impl Sudoku {
     }
 
     fn can_update_cell(&self, position: [usize; 2], new_value: usize) -> bool {
-
         let is_set: bool = 0 != self.data[position[1]][position[0]];
         let are_related_cells_set: bool =
             0 == self.guess_data[position[1]][position[0]][new_value - 1];
@@ -374,7 +395,7 @@ impl Sudoku {
             .clone()
             .into_iter()
             .map(|index| {
-                let row_index: usize = floor(index as f64 / 3 as f64) as usize;
+                let row_index: usize = js_sys::Math::floor(index as f64 / 3 as f64) as usize;
                 let column_index: usize = index % 3;
                 let range_to_fetch = (column_index * 3)..=(column_index * 3 + 2);
                 let _range = 0..=2;
