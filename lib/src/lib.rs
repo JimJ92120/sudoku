@@ -31,6 +31,11 @@ impl Game {
         serde_wasm_bindgen::to_value(&self.sudoku.guess_data()).unwrap()
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn shadow_data(&self) -> JsValue {
+        serde_wasm_bindgen::to_value(&self.sudoku.shadow_data()).unwrap()
+    }
+
     //
     #[wasm_bindgen]
     pub fn generate(&mut self, shift_count: usize, remove_count: usize) {

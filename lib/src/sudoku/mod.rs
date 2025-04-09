@@ -39,6 +39,10 @@ impl Sudoku {
         self.guess_data.clone()
     }
 
+    pub fn shadow_data(&self) -> SudokuData {
+        self.shadow_data.clone()
+    }
+
     // static
     fn new_data() -> SudokuData {
         let range = 0..=8;
