@@ -13,6 +13,7 @@ const COLORS: { [key: string]: Vec4 } = {
   TEXT: [0, 0, 0, 1],
   BACKGROUND: [0, 0, 0, 1],
   HIGHLIGHT: [255, 0, 0, 1], // red
+  SHADOW: [0, 255, 255, 0.15],
   VALID: [0, 255, 0, 1], // green
 };
 

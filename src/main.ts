@@ -94,6 +94,8 @@ window.addEventListener("load", () => {
     sceneEvents.addEventListener(EventName.Generate, () => {
       sudoku.generate(state.shuffleCount * 100, state.difficulty);
       state.finished = false;
+
+      console.log(sudoku.shadow_data, sudoku.data);
     });
     sceneEvents.addEventListener(EventName.Undo, () => sudoku.undo());
     // state update
@@ -114,6 +116,8 @@ window.addEventListener("load", () => {
       }
     );
 
+    console.log(sudoku.shadow_data, sudoku.data);
+
     // feels more "natural" as change is too quick in render loop
     setInterval(() => {
       if (!state.finished && state.autoFill) {
@@ -130,7 +134,7 @@ window.addEventListener("load", () => {
           ? "filled and valid"
           : "not filled or not valid";
 
-        scene.render(sudoku.data, sudoku.guess_data);
+        scene.render(sudoku.data, sudoku.guess_data, sudoku.shadow_data);
       }
 
       loop = requestAnimationFrame(animate);

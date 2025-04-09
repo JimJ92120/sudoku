@@ -29,33 +29,44 @@ class Scene {
   }
 
   //
-  render(data: number[][], guessData: number[][][]): void {
+  render(
+    data: number[][],
+    guessData: number[][][],
+    shadowData: number[][]
+  ): void {
     this.context.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
 
     [...Array(9).keys()].map((index) => {
       const rowIndex = Math.floor(index / 3);
       const columnIndex = index % 3;
 
-      const color =
+      let color =
         (!(rowIndex % 2) && columnIndex % 2) ||
         (rowIndex % 2 && !(columnIndex % 2))
           ? COLORS.SECONDARY
           : COLORS.PRIMARY;
+
       const position: Vec2 = [columnIndex * ZONE_SIZE, rowIndex * ZONE_SIZE];
-      const valuePosition: Vec2 = [rowIndex * 3, columnIndex * 3];
+      const valuePosition: Vec2 = [columnIndex * 3, rowIndex * 3];
 
       this.drawZoneBackground(position, color);
       this.drawZoneCells(
         VEC_3.map((index) =>
-          data[valuePosition[0] + index].slice(
-            valuePosition[1],
-            valuePosition[1] + 3
+          data[valuePosition[1] + index].slice(
+            valuePosition[0],
+            valuePosition[0] + 3
           )
         ),
         VEC_3.map((index) =>
-          guessData[valuePosition[0] + index].slice(
-            valuePosition[1],
-            valuePosition[1] + 3
+          guessData[valuePosition[1] + index].slice(
+            valuePosition[0],
+            valuePosition[0] + 3
+          )
+        ),
+        VEC_3.map((index) =>
+          shadowData[valuePosition[1] + index].slice(
+            valuePosition[0],
+            valuePosition[0] + 3
           )
         ),
         position,
@@ -63,7 +74,15 @@ class Scene {
         COLORS.LINES,
         COLORS.TEXT
       );
-      //
+
+      [...Array(9).keys()].map((_index) => {
+        const _rowIndex = Math.floor(_index / 3);
+        const _columnIndex = _index % 3;
+        let _position: Vec2 = [
+          valuePosition[0] + _columnIndex,
+          valuePosition[1] + _rowIndex,
+        ];
+      });
     });
 
     if (this.selectedPosition) {
@@ -101,6 +120,7 @@ class Scene {
   private drawZoneCells(
     dataValues: number[][],
     guessValues: number[][][],
+    shadowValues: number[][],
     origin: Vec2,
     size: number,
     color: Vec4,
@@ -117,6 +137,11 @@ class Scene {
         dataValues[rowIndex][columnIndex] || guessValues[rowIndex][columnIndex];
 
       this.drawSquareLines(position, size, color);
+
+      if (!shadowValues[rowIndex][columnIndex]) {
+        this.context.fillStyle = this.rgba(COLORS.SHADOW);
+        this.context.fillRect(position[0], position[1], CELL_SIZE, CELL_SIZE);
+      }
 
       this.context.fillStyle = this.rgba(textColor);
 
